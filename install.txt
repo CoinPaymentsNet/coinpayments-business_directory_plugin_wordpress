@@ -16,4 +16,4 @@ This plugin implements a payment gateway for Business Directory Plugin to let bu
 3. In the Business Directory Plugin Settings page go to the Payment tab, then click CoinPayments.net.
 4. Check "Enable CoinPayments.net" and enter your CoinPayments.net Client ID.
 5. Select "Enable Webhooks" and enter your Client Secret to use CoinPayments.NET webhooks.
-5. Click "Save changes" and the gateway will be active.
+6. Click "Save changes" and the gateway will be active.

@@ -191,7 +191,7 @@ class WPBDP_Gateway_Coinpayments_API_Handler
         );
 
         $params = $this->append_invoice_metadata($params);
-        return $this->send_request('POST', $action, $this->client_id, $params);
+        return $this->send_request('POST', $action, $this->client_id, $params, $this->client_secret);
     }
 
     /**
