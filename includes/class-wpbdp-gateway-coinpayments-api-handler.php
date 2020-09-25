@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 class WPBDP_Gateway_Coinpayments_API_Handler
 {
 
-    const API_URL = 'https://alpha-api.coinpayments.net';
+    const API_URL = 'https://api.coinpayments.net';
     const API_VERSION = '1';
 
     const API_SIMPLE_INVOICE_ACTION = 'invoices';
