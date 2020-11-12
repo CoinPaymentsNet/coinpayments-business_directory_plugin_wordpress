@@ -125,7 +125,7 @@ class WPBDP__Gateway__Coinpayments extends WPBDP__Payment_Gateway
                 } elseif ($request_data['invoice']['status'] == 'Completed') {
                     $payment->status = 'completed';
                 } elseif ($request_data['invoice']['status'] == 'Cancelled') {
-                    $payment->status = 'cancelled';
+                    $payment->status = 'canceled';
                 }
                 $payment->save();
             }
