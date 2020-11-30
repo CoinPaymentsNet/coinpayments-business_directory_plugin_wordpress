@@ -90,7 +90,7 @@ class WPBDP__Gateway__Coinpayments extends WPBDP__Payment_Gateway
                 'cancel-url' => $payment->checkout_url,
             );
             $coinpayments_args = http_build_query($coinpayments_args, '', '&');
-            $redirect_url = sprintf('%s/%s/?%s', WPBDP_Gateway_Coinpayments_API_Handler::API_URL, WPBDP_Gateway_Coinpayments_API_Handler::API_CHECKOUT_ACTION, $coinpayments_args);
+            $redirect_url = sprintf('%s/%s/?%s', WPBDP_Gateway_Coinpayments_API_Handler::CHECKOUT, WPBDP_Gateway_Coinpayments_API_Handler::API_CHECKOUT_ACTION, $coinpayments_args);
         } elseif (!empty($invoice['error'])) {
             $error_msg = _x('Can\'t create CoinPayments.NET invoice!', 'coinpayments', 'business-directory-plugin');
             return array('result' => 'failure', 'error' => $error_msg);
