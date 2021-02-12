@@ -146,7 +146,21 @@ class WPBDP__Gateway__Coinpayments extends WPBDP__Payment_Gateway
             $amount = intval(number_format($args['amount'], $coin_currency['decimalPlaces'], '', ''));
             $display_value = $args['amount'];
 
-            $invoice = $coinpayments->create_invoice($invoice_id, $coin_currency['id'], $amount, $display_value);
+            $billing_data = array(
+                'first_name' => $args['first_name'],
+                'last_name' => $args['last_name'],
+                'email' => $args['email']
+            );
+
+            $invoice_params = array(
+                'invoice_id' => $invoice_id,
+                'currency_id' => $coin_currency['id'],
+                'amount' => $amount,
+                'display_value' => $display_value,
+                'billing_data' => $billing_data
+            );
+
+            $invoice = $coinpayments->create_invoice($invoice_id, $coin_currency['id'], $amount, $display_value, $invoice_params);
             if ($this->get_option('webhooks') == 'Yes') {
                 $invoice = array_shift($invoice['invoices']);
             }
