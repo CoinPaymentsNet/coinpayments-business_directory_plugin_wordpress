@@ -172,7 +172,7 @@ class WPBDP_Gateway_Coinpayments_API_Handler
      * @return bool|mixed
      * @throws Exception
      */
-    public function create_invoice($invoice_id, $currency_id, $amount, $display_value)
+    public function create_invoice($invoice_params)
     {
 
         if ($this->webhooks) {
@@ -183,14 +183,16 @@ class WPBDP_Gateway_Coinpayments_API_Handler
 
         $params = array(
             'clientId' => $this->client_id,
-            'invoiceId' => $invoice_id,
+            'invoiceId' => $invoice_params['invoice_id'],
             'amount' => [
-                'currencyId' => $currency_id,
-                "displayValue" => $display_value,
-                'value' => $amount
+                'currencyId' => $invoice_params['currency_id'],
+                "displayValue" => $invoice_params['display_value'],
+                'value' => $invoice_params['amount']
             ],
+            'notesToRecipient' => $invoice_params['notes_link']
         );
 
+        $params = $this->append_billing_data($params, $invoice_params['billing_data']);
         $params = $this->append_invoice_metadata($params);
         return $this->send_request('POST', $action, $this->client_id, $params, $this->client_secret);
     }
@@ -296,6 +298,37 @@ class WPBDP_Gateway_Coinpayments_API_Handler
         );
 
         return $request_data;
+    }
+
+    /**
+     * @array $billing_data
+     * @return mixed
+     */
+    protected function append_billing_data($request_params, $billing_data)
+    {
+        $request_params['buyer'] = array(
+            'companyName' => $billing_data['company'],
+            'name' => array(
+                'firstName' => $billing_data['first_name'],
+                'lastName' => $billing_data['last_name']
+            ),
+            'emailAddress' => $billing_data['email'],
+        );
+
+        if (!empty($billing_data['address_1']) &&
+            !empty($billing_data['city']) &&
+            preg_match('/^([A-Z]{2})$/', $billing_data['country']))
+        {
+            $request_params['buyer']['address'] = array(
+                'address1' => $billing_data['address_1'],
+                'address2' => $billing_data['address_2'],
+                'provinceOrState' => $billing_data['state'],
+                'city' => $billing_data['city'],
+                'countryCode' => $billing_data['country'],
+                'postalCode' => $billing_data['postcode'],
+            );
+        }
+        return $request_params;
     }
 
     /**
