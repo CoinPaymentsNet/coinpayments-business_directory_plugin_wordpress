@@ -303,28 +303,28 @@ class WPBDP_Gateway_Coinpayments_API_Handler
      * @array $billing_data
      * @return mixed
      */
-    protected function append_billing_data($request_params, $billing_data)
+    protected function append_billing_data($request_params, $args)
     {
         $request_params['buyer'] = array(
-            'companyName' => $billing_data['company'],
+            'companyName' => get_bloginfo('name'),
             'name' => array(
-                'firstName' => $billing_data['first_name'],
-                'lastName' => $billing_data['last_name']
+                'firstName' => $args['first_name'],
+                'lastName' => $args['last_name']
             ),
-            'emailAddress' => $billing_data['email'],
+            'emailAddress' => $args['email'],
         );
 
-        if (!empty($billing_data['address_1']) &&
-            !empty($billing_data['city']) &&
-            preg_match('/^([A-Z]{2})$/', $billing_data['country']))
+        if (!empty($args['address']) &&
+            !empty($args['city']) &&
+            preg_match('/^([A-Z]{2})$/', $args['country']))
         {
             $request_params['buyer']['address'] = array(
-                'address1' => $billing_data['address_1'],
-                'address2' => $billing_data['address_2'],
-                'provinceOrState' => $billing_data['state'],
-                'city' => $billing_data['city'],
-                'countryCode' => $billing_data['country'],
-                'postalCode' => $billing_data['postcode'],
+                'address1' => $args['address'],
+                'address2' => $args['address_2'],
+                'provinceOrState' => $args['state'],
+                'city' => $args['city'],
+                'countryCode' => $args['country'],
+                'postalCode' => $args['zip']
             );
         }
         return $request_params;
