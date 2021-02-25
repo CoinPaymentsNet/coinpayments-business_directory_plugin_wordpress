@@ -144,19 +144,6 @@ class WPBDP__Gateway__Coinpayments extends WPBDP__Payment_Gateway
             $amount = intval(number_format($args['amount'], $coin_currency['decimalPlaces'], '', ''));
             $display_value = $args['amount'];
 
-            $billing_data = array(
-                'company' => get_bloginfo('name'),
-                'first_name' => $args['first_name'],
-                'last_name' => $args['last_name'],
-                'email' => $args['email'],
-                'address_1' => $args['address'],
-                'address_2' => $args['address_2'],
-                'state' => $args['state'],
-                'city' => $args['city'],
-                'country' => $args['country'],
-                'postcode' => $args['zip']
-            );
-
             $notes_link = sprintf(
                 "%s|Store name: %s|Order #%s",
                 admin_url('admin.php?page=wpbdp_admin_payments&wpbdp-view=details&payment-id='. $args['payment_id']),
@@ -168,7 +155,7 @@ class WPBDP__Gateway__Coinpayments extends WPBDP__Payment_Gateway
                 'currency_id' => $coin_currency['id'],
                 'amount' => $amount,
                 'display_value' => $display_value,
-                'billing_data' => $billing_data,
+                'billing_data' => $args,
                 'notes_link' => $notes_link
             );
 
