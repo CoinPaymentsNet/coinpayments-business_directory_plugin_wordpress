@@ -10,8 +10,9 @@ class WPBDP__Gateway__Coinpayments extends WPBDP__Payment_Gateway
 
     public function get_title()
     {
-        return _x('CoinPayments.NET', 'coinpayments', 'business-directory-plugin');
+        return _x('CoinPayments.net','coinpayments', 'business-directory-plugin');
     }
+
 
     public function get_integration_method()
     {
@@ -39,7 +40,33 @@ class WPBDP__Gateway__Coinpayments extends WPBDP__Payment_Gateway
 
     public function supports_currency($currency)
     {
+        $this->add_description();
         return true;
+    }
+
+    public function add_description()
+    {
+        ?><script type="text/JavaScript">
+        var labels = document.getElementsByClassName('wpbdp-checkout-gateway-selection wpbdp-checkout-section');
+        var arr_labels = document.getElementsByClassName('wpbdp-checkout-gateway-selection wpbdp-checkout-section')[0].getElementsByTagName("label");
+        var element = document.createElement("div");
+        element.id = 'description';
+        element.innerHTML = '<br>Pay with Bitcoin, Litecoin, or other altcoins via<br><a href="https://alpha.coinpayments.net/" target="_blank" style="text-decoration: underline; font-weight: bold;" title="CoinPayments.net">CoinPayments.net</a></br>';
+
+        Array.prototype.slice.call(labels).forEach(function (labelEl) {
+            labelEl.addEventListener('click', function foo(event) {
+                if (event.target.value === 'coinpayments')
+                    for (var i = 0; i < arr_labels.length; i++)
+                        if (arr_labels[i].children[0].getAttribute("value") === "coinpayments")
+                            arr_labels[i].appendChild(element);
+                if (event.target.value !== 'coinpayments')
+                    for (var i = 0; i < arr_labels.length; i++)
+                        if (arr_labels[i].children[0].getAttribute("value") === "coinpayments")
+                            if(document.getElementById("description"))
+                                arr_labels[i].removeChild(arr_labels[i].lastChild);
+            });
+        });
+    </script><?php
     }
 
     public function validate_settings()
@@ -110,7 +137,7 @@ class WPBDP__Gateway__Coinpayments extends WPBDP__Payment_Gateway
 
         $request_data = json_decode($content, true);
 
-        if ($coinpayments->check_data_signature($signature, $content, $this->get_id()) && isset($request_data['invoice']['invoiceId'])) {
+        if ($coinpayments->check_data_signature($signature, $content, $this->get_id(), $request_data['invoice']['status']) && isset($request_data['invoice']['invoiceId'])) {
             $invoice_str = $request_data['invoice']['invoiceId'];
             $invoice_str = explode('|', $invoice_str);
 
@@ -120,11 +147,9 @@ class WPBDP__Gateway__Coinpayments extends WPBDP__Payment_Gateway
             if ($host_hash == md5(get_site_url())) {
                 $payment = WPBDP_Payment::objects()->get($invoice_id);
                 $payment->gateway_tx_id = $request_data['invoice']['id'];
-                if ($request_data['invoice']['status'] == 'Pending') {
-                    $payment->status = 'pending';
-                } elseif ($request_data['invoice']['status'] == 'Completed') {
+                if ($request_data['invoice']['status'] == WPBDP_Gateway_Coinpayments_API_Handler::PAID_EVENT) {
                     $payment->status = 'completed';
-                } elseif ($request_data['invoice']['status'] == 'Cancelled') {
+                } elseif ($request_data['invoice']['status'] == WPBDP_Gateway_Coinpayments_API_Handler::CANCELLED_EVENT) {
                     $payment->status = 'canceled';
                 }
                 $payment->save();
@@ -146,7 +171,22 @@ class WPBDP__Gateway__Coinpayments extends WPBDP__Payment_Gateway
             $amount = intval(number_format($args['amount'], $coin_currency['decimalPlaces'], '', ''));
             $display_value = $args['amount'];
 
-            $invoice = $coinpayments->create_invoice($invoice_id, $coin_currency['id'], $amount, $display_value);
+            $notes_link = sprintf(
+                "%s|Store name: %s|Order #%s",
+                admin_url('admin.php?page=wpbdp_admin_payments&wpbdp-view=details&payment-id='. $args['payment_id']),
+                get_bloginfo('name'),
+                $args['payment_id']);
+
+            $invoice_params = array(
+                'invoice_id' => $invoice_id,
+                'currency_id' => $coin_currency['id'],
+                'amount' => $amount,
+                'display_value' => $display_value,
+                'billing_data' => $args,
+                'notes_link' => $notes_link
+            );
+
+            $invoice = $coinpayments->create_invoice($invoice_params);
             if ($this->get_option('webhooks') == 'Yes') {
                 $invoice = array_shift($invoice['invoices']);
             }
