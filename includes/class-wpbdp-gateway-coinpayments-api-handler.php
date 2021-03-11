@@ -26,6 +26,9 @@ class WPBDP_Gateway_Coinpayments_API_Handler
     const API_CHECKOUT_ACTION = 'checkout';
     const FIAT_TYPE = 'fiat';
 
+    const PAID_EVENT = 'Paid';
+    const CANCELLED_EVENT = 'Cancelled';
+
     /**
      * @var string
      */
@@ -70,8 +73,13 @@ class WPBDP_Gateway_Coinpayments_API_Handler
                     return $webHook['notificationsUrl'];
                 }, $webhooks_list['items']);
             }
-            if (!in_array($this->get_notification_url($gateway_id), $webhooks_urls_list)) {
-                if ($this->create_webhook($gateway_id)) {
+            if (!in_array($this->get_notification_url($gateway_id, self::PAID_EVENT), $webhooks_urls_list)) {
+                if ($this->create_webhook($gateway_id, self::PAID_EVENT)) {
+                    $exists = true;
+                }
+            }
+            if (!in_array($this->get_notification_url($gateway_id, self::CANCELLED_EVENT), $webhooks_urls_list)) {
+                if ($this->create_webhook($gateway_id, self::CANCELLED_EVENT)) {
                     $exists = true;
                 }
             } else {
@@ -86,19 +94,15 @@ class WPBDP_Gateway_Coinpayments_API_Handler
      * @return bool|mixed
      * @throws Exception
      */
-    public function create_webhook($gateway_id)
+    public function create_webhook($gateway_id, $event = false)
     {
 
         $action = sprintf(self::API_WEBHOOK_ACTION, $this->client_id);
 
         $params = array(
-            "notificationsUrl" => $this->get_notification_url($gateway_id),
+            "notificationsUrl" => $this->get_notification_url($gateway_id, $event),
             "notifications" => [
-                "invoiceCreated",
-                "invoicePending",
-                "invoicePaid",
-                "invoiceCompleted",
-                "invoiceCancelled",
+                sprintf("invoice%s", $event),
             ],
         );
 
@@ -155,10 +159,10 @@ class WPBDP_Gateway_Coinpayments_API_Handler
      * @param $gateway_id
      * @return bool
      */
-    public function check_data_signature($signature, $content, $gateway_id)
+    public function check_data_signature($signature, $content, $gateway_id, $event)
     {
 
-        $request_url = $this->get_notification_url($gateway_id);
+        $request_url = $this->get_notification_url($gateway_id, $event);
         $signature_string = sprintf('%s%s', $request_url, $content);
         $encoded_pure = $this->encode_signature_string($signature_string, $this->client_secret);
         return $signature == $encoded_pure;
@@ -220,9 +224,13 @@ class WPBDP_Gateway_Coinpayments_API_Handler
      * @param $gateway_id
      * @return string
      */
-    protected function get_notification_url($gateway_id)
+    protected function get_notification_url($gateway_id, $event)
     {
-        return add_query_arg('wpbdp-listener', $gateway_id, home_url('index.php'));
+        $url = add_query_arg('wpbdp-listener', $gateway_id, home_url('index.php'));
+        $url = add_query_arg('clientId', $this->client_id, $url);
+        $url = add_query_arg('event', $event, $url);
+
+        return $url;
     }
 
     /**
@@ -304,28 +312,28 @@ class WPBDP_Gateway_Coinpayments_API_Handler
      * @array $billing_data
      * @return mixed
      */
-    protected function append_billing_data($request_params, $billing_data)
+    protected function append_billing_data($request_params, $args)
     {
         $request_params['buyer'] = array(
-            'companyName' => $billing_data['company'],
+            'companyName' => get_bloginfo('name'),
             'name' => array(
-                'firstName' => $billing_data['first_name'],
-                'lastName' => $billing_data['last_name']
+                'firstName' => $args['first_name'],
+                'lastName' => $args['last_name']
             ),
-            'emailAddress' => $billing_data['email'],
+            'emailAddress' => $args['email'],
         );
 
-        if (!empty($billing_data['address_1']) &&
-            !empty($billing_data['city']) &&
-            preg_match('/^([A-Z]{2})$/', $billing_data['country']))
+        if (!empty($args['address']) &&
+            !empty($args['city']) &&
+            preg_match('/^([A-Z]{2})$/', $args['country']))
         {
             $request_params['buyer']['address'] = array(
-                'address1' => $billing_data['address_1'],
-                'address2' => $billing_data['address_2'],
-                'provinceOrState' => $billing_data['state'],
-                'city' => $billing_data['city'],
-                'countryCode' => $billing_data['country'],
-                'postalCode' => $billing_data['postcode'],
+                'address1' => $args['address'],
+                'address2' => $args['address_2'],
+                'provinceOrState' => $args['state'],
+                'city' => $args['city'],
+                'countryCode' => $args['country'],
+                'postalCode' => $args['zip']
             );
         }
         return $request_params;
