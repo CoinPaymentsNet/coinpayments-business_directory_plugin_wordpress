@@ -26,6 +26,9 @@ class WPBDP_Gateway_Coinpayments_API_Handler
     const API_CHECKOUT_ACTION = 'checkout';
     const FIAT_TYPE = 'fiat';
 
+    const PAID_EVENT = 'Paid';
+    const CANCELLED_EVENT = 'Cancelled';
+
     /**
      * @var string
      */
@@ -70,8 +73,13 @@ class WPBDP_Gateway_Coinpayments_API_Handler
                     return $webHook['notificationsUrl'];
                 }, $webhooks_list['items']);
             }
-            if (!in_array($this->get_notification_url($gateway_id), $webhooks_urls_list)) {
-                if ($this->create_webhook($gateway_id)) {
+            if (!in_array($this->get_notification_url($gateway_id, self::PAID_EVENT), $webhooks_urls_list)) {
+                if ($this->create_webhook($gateway_id, self::PAID_EVENT)) {
+                    $exists = true;
+                }
+            }
+            if (!in_array($this->get_notification_url($gateway_id, self::CANCELLED_EVENT), $webhooks_urls_list)) {
+                if ($this->create_webhook($gateway_id, self::CANCELLED_EVENT)) {
                     $exists = true;
                 }
             } else {
@@ -86,19 +94,15 @@ class WPBDP_Gateway_Coinpayments_API_Handler
      * @return bool|mixed
      * @throws Exception
      */
-    public function create_webhook($gateway_id)
+    public function create_webhook($gateway_id, $event = false)
     {
 
         $action = sprintf(self::API_WEBHOOK_ACTION, $this->client_id);
 
         $params = array(
-            "notificationsUrl" => $this->get_notification_url($gateway_id),
+            "notificationsUrl" => $this->get_notification_url($gateway_id, $event),
             "notifications" => [
-                "invoiceCreated",
-                "invoicePending",
-                "invoicePaid",
-                "invoiceCompleted",
-                "invoiceCancelled",
+                sprintf("invoice%s", $event),
             ],
         );
 
@@ -155,10 +159,10 @@ class WPBDP_Gateway_Coinpayments_API_Handler
      * @param $gateway_id
      * @return bool
      */
-    public function check_data_signature($signature, $content, $gateway_id)
+    public function check_data_signature($signature, $content, $gateway_id, $event)
     {
 
-        $request_url = $this->get_notification_url($gateway_id);
+        $request_url = $this->get_notification_url($gateway_id, $event);
         $signature_string = sprintf('%s%s', $request_url, $content);
         $encoded_pure = $this->encode_signature_string($signature_string, $this->client_secret);
         return $signature == $encoded_pure;
@@ -189,6 +193,7 @@ class WPBDP_Gateway_Coinpayments_API_Handler
                 "displayValue" => $invoice_params['display_value'],
                 'value' => $invoice_params['amount']
             ],
+            'notesToRecipient' => $invoice_params['notes_link']
         );
 
         $params = $this->append_billing_data($params, $invoice_params['billing_data']);
@@ -219,9 +224,13 @@ class WPBDP_Gateway_Coinpayments_API_Handler
      * @param $gateway_id
      * @return string
      */
-    protected function get_notification_url($gateway_id)
+    protected function get_notification_url($gateway_id, $event)
     {
-        return add_query_arg('wpbdp-listener', $gateway_id, home_url('index.php'));
+        $url = add_query_arg('wpbdp-listener', $gateway_id, home_url('index.php'));
+        $url = add_query_arg('clientId', $this->client_id, $url);
+        $url = add_query_arg('event', $event, $url);
+
+        return $url;
     }
 
     /**
