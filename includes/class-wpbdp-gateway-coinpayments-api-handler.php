@@ -55,8 +55,19 @@ class WPBDP_Gateway_Coinpayments_API_Handler
         $this->client_id = $client_id;
         $this->client_secret = $client_secret;
         $this->webhooks = $webhooks;
+        add_action( 'wp_enqueue_scripts', array( $this, 'add_description' ) );
     }
 
+    public function add_description()
+    {
+        $page_id = 5;
+
+        if ( is_page( $page_id ) ) {
+            $a = plugin_dir_url( __FILE__ );
+            wp_register_script('description_coinpayments', plugin_dir_url( __FILE__ ).'description_coinpayments.js', array( 'wpbdp-js' ), WPBDP_VERSION, false);
+            wp_enqueue_script('description_coinpayments');
+        }
+    }
     /**
      * @param $gateway_id
      * @return bool
