@@ -60,11 +60,10 @@ class WPBDP_Gateway_Coinpayments_API_Handler
 
     public function add_description()
     {
-        $page_id = 5;
-
-        if ( is_page( $page_id ) ) {
-            $a = plugin_dir_url( __FILE__ );
-            wp_register_script('description_coinpayments', plugin_dir_url( __FILE__ ).'description_coinpayments.js', array( 'wpbdp-js' ), WPBDP_VERSION, false);
+        $url = ((!empty($_SERVER['HTTPS'])) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        if (strripos($url, 'checkout')) {
+            $a = plugin_dir_url(__FILE__);
+            wp_register_script('description_coinpayments', plugin_dir_url(__FILE__) . 'description_coinpayments.js', array('wpbdp-js'), WPBDP_VERSION, false);
             wp_enqueue_script('description_coinpayments');
         }
     }
