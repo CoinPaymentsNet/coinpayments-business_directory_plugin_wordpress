@@ -10,8 +10,9 @@ class WPBDP__Gateway__Coinpayments extends WPBDP__Payment_Gateway
 
     public function get_title()
     {
-        return _x('CoinPayments.NET', 'coinpayments', 'business-directory-plugin');
+        return _x('CoinPayments.net','coinpayments', 'business-directory-plugin');
     }
+
 
     public function get_integration_method()
     {
