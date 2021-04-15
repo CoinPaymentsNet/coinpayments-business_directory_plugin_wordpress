@@ -1,0 +1,19 @@
+=== CoinPayments.net Payment Gateway for Business Directory Plugin ===
+Contributors: CoinPayments, woothemes, mikejolley, jameskoster, CoenJacobs
+Donate link: https://gocps.net/3ncyzcq3sy0ww1rxghleip1aky/
+Tags: bitcoin, litecoin, altcoins, altcoin, dogecoin, feathercoin, netcoin, peercoin, blackcoin, darkcoin, ripple, ethereum, ether, woocommerce
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+
+== Description ==
+
+This plugin implements a payment gateway for Business Directory Plugin to let buyers pay with Bitcoin, Litecoin, Ripple, and other cryptocurrencies via CoinPayments.net.
+
+== Installation ==
+
+1. Upload files to the `/wp-content/plugins/wpbdp-gateway-coinpayments` directory.
+2. Activate the plugin through the 'Plugins' menu in WordPress.
+3. In the Business Directory Plugin Settings page go to the Payment tab, then click CoinPayments.net.
+4. Check "Enable CoinPayments.net" and enter your CoinPayments.net Client ID.
+5. Select "Enable Webhooks" and enter your Client Secret to use CoinPayments.NET webhooks.
+6. Click "Save changes" and the gateway will be active.
