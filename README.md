@@ -13,5 +13,7 @@ In no event will CoinPayments Inc. or its directors, officers, employees, shareh
 1. Log into your https://alpha.coinpayments.net/ account
 2. Click on Business Tools -> Intergrations -> Pre-built Plugins -> + add Intergration button
 3. Select this plug-in from the dropdown menu
-4. Click the download plugin button
+4. Click the download plugin button  
+
+![image_2021-04-26_14-20-55](https://user-images.githubusercontent.com/78020458/116074640-b3ffeb00-a69a-11eb-9316-4f64de333ed3.png)
 
