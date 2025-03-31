@@ -1,3 +1,5 @@
+> NOTICE: Migrated to [CoinPaymentsNet/plugin-wordpress-business-directory](https://github.com/CoinPaymentsNet/plugin-wordpress-business-directory).
+
 IMPORTANT NOTE:
 
 This is only for use with: https://alpha.coinpayments.net/
